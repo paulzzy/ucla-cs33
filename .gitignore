@@ -19,3 +19,15 @@
 .clang-format
 .DS_Store
 .vscode
+
+# Lab 1 files provided by Prof. Ghaforyfard
+
+lab1/btest.c
+lab1/Makefile
+lab1/ishow.c
+lab1/README
+lab1/tests.c
+lab1/btest.h
+lab1/dlc
+lab1/decl.c
+lab1/bits.h
