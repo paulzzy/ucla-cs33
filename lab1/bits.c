@@ -1,8 +1,8 @@
-/* 
- * CS:APP Data Lab 
- * 
+/*
+ * CS:APP Data Lab
+ *
  * <Please put your name and userid here>
- * 
+ *
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
  *
@@ -10,7 +10,7 @@
  * compiler. You can still use printf for debugging without including
  * <stdio.h>, although you might get a compiler warning. In general,
  * it's not good practice to ignore compiler warnings, but in this
- * case it's OK.  
+ * case it's OK.
  */
 
 #if 0
@@ -129,7 +129,6 @@ NOTES:
  *      the correct answers.
  */
 
-
 #endif
 /* Copyright (C) 1991-2012 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
@@ -158,39 +157,33 @@ NOTES:
 /* wchar_t uses ISO/IEC 10646 (2nd ed., published 2011-03-15) /
    Unicode 6.0.  */
 /* We do not support C11 <threads.h>.  */
-//1
+// 1
 /*
  * isTmax - returns 1 if x is the maximum, two's complement number,
- *     and 0 otherwise 
+ *     and 0 otherwise
  *   Legal ops: ! ~ & ^ | +
  *   Max ops: 10
  *   Rating: 1
  */
-int isTmax(int x) {
-  return 2;
-}
-/* 
+int isTmax(int x) {}
+/*
  * evenBits - return word with all even-numbered bits set to 1
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 8
  *   Rating: 1
  */
-int evenBits(void) {
-  return 2;
-}
-//2
-/* 
- * isEqual - return 1 if x == y, and 0 otherwise 
+int evenBits(void) { return 2; }
+// 2
+/*
+ * isEqual - return 1 if x == y, and 0 otherwise
  *   Examples: isEqual(5,5) = 1, isEqual(4,5) = 0
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 5
  *   Rating: 2
  */
-int isEqual(int x, int y) {
-  return 2;
-}
-/* 
- * fitsBits - return 1 if x can be represented as an 
+int isEqual(int x, int y) { return 2; }
+/*
+ * fitsBits - return 1 if x can be represented as an
  *  n-bit, two's complement integer.
  *   1 <= n <= 32
  *   Examples: fitsBits(5,3) = 0, fitsBits(-4,3) = 1
@@ -198,30 +191,24 @@ int isEqual(int x, int y) {
  *   Max ops: 15
  *   Rating: 2
  */
-int fitsBits(int x, int n) {
-  return 2;
-}
-//3
-/* 
- * conditional - same as x ? y : z 
+int fitsBits(int x, int n) { return 2; }
+// 3
+/*
+ * conditional - same as x ? y : z
  *   Example: conditional(2,4,5) = 4
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 16
  *   Rating: 3
  */
-int conditional(int x, int y, int z) {
-  return 2;
-}
-/* 
- * isGreater - if x > y  then return 1, else return 0 
+int conditional(int x, int y, int z) { return 2; }
+/*
+ * isGreater - if x > y  then return 1, else return 0
  *   Example: isGreater(4,5) = 0, isGreater(5,4) = 1
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 24
  *   Rating: 3
  */
-int isGreater(int x, int y) {
-  return 2;
-}
+int isGreater(int x, int y) { return 2; }
 /*
  * multFiveEighths - multiplies by 5/8 rounding toward 0.
  *   Should exactly duplicate effect of C expression (x*5/8),
@@ -233,23 +220,19 @@ int isGreater(int x, int y) {
  *   Max ops: 12
  *   Rating: 3
  */
-int multFiveEighths(int x) {
-  return 2;
-}
-//4
-/* 
- * logicalNeg - implement the ! operator, using all of 
+int multFiveEighths(int x) { return 2; }
+// 4
+/*
+ * logicalNeg - implement the ! operator, using all of
  *              the legal operators except !
  *   Examples: logicalNeg(3) = 0, logicalNeg(0) = 1
  *   Legal ops: ~ & ^ | + << >>
  *   Max ops: 12
- *   Rating: 4 
+ *   Rating: 4
  */
-int logicalNeg(int x) {
-  return 2;
-}
-/* 
- * twosComp2SignMag - Convert from two's complement to sign-magnitude 
+int logicalNeg(int x) { return 2; }
+/*
+ * twosComp2SignMag - Convert from two's complement to sign-magnitude
  *   where the MSB is the sign bit
  *   You can assume that x > TMin
  *   Example: twosComp2SignMag(-5) = 0x80000005.
@@ -257,9 +240,7 @@ int logicalNeg(int x) {
  *   Max ops: 15
  *   Rating: 4
  */
-int twosComp2SignMag(int x) {
-  return 2;
-}
+int twosComp2SignMag(int x) { return 2; }
 /*
  * isPower2 - returns 1 if x is a power of 2, and 0 otherwise
  *   Examples: isPower2(5) = 0, isPower2(8) = 1, isPower2(0) = 0
@@ -268,6 +249,4 @@ int twosComp2SignMag(int x) {
  *   Max ops: 20
  *   Rating: 4
  */
-int isPower2(int x) {
-  return 2;
-}
+int isPower2(int x) { return 2; }
