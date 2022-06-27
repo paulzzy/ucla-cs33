@@ -165,7 +165,12 @@ NOTES:
  *   Max ops: 10
  *   Rating: 1
  */
-int isTmax(int x) {}
+int isTmax(int x) {
+  // must account for -1 case
+  int try_overflow = x + 1;
+  int is_t_max = !(~((x + !try_overflow) ^ try_overflow));
+  return is_t_max;
+}
 /*
  * evenBits - return word with all even-numbered bits set to 1
  *   Legal ops: ! ~ & ^ | + << >>
