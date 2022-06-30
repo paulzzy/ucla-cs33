@@ -205,7 +205,26 @@ int fitsBits(int x, int n) { return 2; }
  *   Max ops: 16
  *   Rating: 3
  */
-int conditional(int x, int y, int z) { return 2; }
+int conditional(int x, int y, int z) {
+  // When x is true:
+  // try_y = y & 0b1111111... + 0
+  //       = y
+  // try_z = z & 0b1111111... + 1
+  //       = z & 0b0000000...
+  //       = 0
+  //
+  // When x is false:
+  // try_y = y & 0b1111111...0 + 2
+  //       = y & 0b0000000...
+  //       = 0
+  // try_z = z & 0b1111111...0 + 1
+  //       = z & 0b1111111...
+  //       = z
+
+  int try_y = y & (~!x + (!x << 1));
+  int try_z = z & ~!x + 1;
+  return try_y + try_z;
+}
 /*
  * isGreater - if x > y  then return 1, else return 0
  *   Example: isGreater(4,5) = 0, isGreater(5,4) = 1
