@@ -258,7 +258,45 @@ int conditional(int x, int y, int z) {
  *   Max ops: 24
  *   Rating: 3
  */
-int isGreater(int x, int y) { return 2; }
+int isGreater(int x, int y) {
+  const int max_shift = 31;
+  const int t_min = 1 << max_shift;
+  const int t_max = ~t_min;
+  // Capture bits that differ between x and y.
+  int diff = x ^ y;
+  // "Smear" the leftmost 1 bit. E.g. 0b0101 becomes 0b0111.
+  int smeared_diff = diff | diff >> 1;
+  smeared_diff = smeared_diff | smeared_diff >> 2;
+  smeared_diff = smeared_diff | smeared_diff >> 4;
+  smeared_diff = smeared_diff | smeared_diff >> 8;
+  smeared_diff = smeared_diff | smeared_diff >> 16;
+  // Only keep the leftmost 1 bit
+  int only_left_diff = smeared_diff ^ (smeared_diff >> 1);
+  int x_flip_sign = x ^ t_min;
+  int y_flip_all_except_sign = y ^ t_max;
+  // Does two useful things:
+  //
+  // 1. If x is positive and y is negative, the MSB of this variable is set
+  // to 1. If x is negative, or if y is positive, the MSB of this variable is
+  // set to 0.
+  //
+  // 2. Captures the bits in x greater than the corresponding bits in y. For
+  // example, if the LSB in x is 1 while in y it's 0, the LSB of this variable
+  // will be set to 1.
+  int greater_bits_x = x_flip_sign & y_flip_all_except_sign;
+  // x >= 0 and y < 0 guarantees x > y.
+  int pos_x_neg_y = t_min & greater_bits_x;
+  // If the bit with the leftmost bit difference is greater in x than y, this
+  // variable is set to a nonzero value. If the bit in y is greater, it's set to
+  // zero.
+  //
+  // Note that if x is negative and y is positive, the leftmost bit difference
+  // will always be the MSB. But since this implies the MSB of x < MSB of y,
+  // then this variable will always be set to zero, which makes sense given that
+  // x < 0 and y >= 0 guarantees x < y.
+  int x_has_greater_diff = only_left_diff & greater_bits_x;
+  return !!(pos_x_neg_y | x_has_greater_diff);
+}
 /*
  * multFiveEighths - multiplies by 5/8 rounding toward 0.
  *   Should exactly duplicate effect of C expression (x*5/8),
@@ -270,7 +308,19 @@ int isGreater(int x, int y) { return 2; }
  *   Max ops: 12
  *   Rating: 3
  */
-int multFiveEighths(int x) { return 2; }
+int multFiveEighths(int x) {
+  // Multiples x by 5 using repeated addition, then divides by 8 using a right
+  // shift of 3. Since the result is rounded toward 0 instead of rounded down,
+  // one is added if x is negative and dividing by 8 leaves a remainder.
+
+  const int divide_8 = 3;
+  const int max_shift = 31;
+  const int remainder_mask = 7;
+  int x_mult_5 = x + x + x + x + x;
+  int is_neg = x >> max_shift;
+  int has_remainder = x_mult_5 & remainder_mask;
+  return (x_mult_5 >> divide_8) + !!(is_neg & has_remainder);
+}
 // 4
 /*
  * logicalNeg - implement the ! operator, using all of
