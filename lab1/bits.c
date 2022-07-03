@@ -166,8 +166,16 @@ NOTES:
  *   Rating: 1
  */
 int isTmax(int x) {
-  // must account for -1 case
+  // Attempts to overflow x, which will only occur if x is Tmax. Note that Tmax
+  // + 1 = Tmin.
   int try_overflow = x + 1;
+  // Checks that x actually did overflow. Note that the expression (a ^ b)
+  // yields -1 (all 1s in the binary representation) if a == Tmax and b ==
+  // Tmin. ~(-1) yields 0. !0 yields 1.
+  //
+  // There is an edge case where -1 + 1 == 0 and (-1 ^ 0) yields -1. If x is -1,
+  // then `!(x + 1)` will yield 1; if x is Tmax, then `!(x + 1)` yields 0. This
+  // allows x == -1 to be distinguished from x == Tmax.
   int is_t_max = !(~((x + !try_overflow) ^ try_overflow));
   return is_t_max;
 }
