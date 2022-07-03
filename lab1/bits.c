@@ -330,7 +330,20 @@ int multFiveEighths(int x) {
  *   Max ops: 12
  *   Rating: 4
  */
-int logicalNeg(int x) { return 2; }
+int logicalNeg(int x) {
+  // Performs an equality check, since a positive number does not equal its
+  // negative value. However, 0 == -0, so 1 is returned if x == 0.
+  //
+  // The edge case Tmin = -Tmin is addressed by returning 0 if x is negative,
+  // regardless of the equality check.
+
+  const int max_shift = 31;
+  int is_neg_mask = x >> max_shift;
+  int neg_x = ~x + 1;
+  int is_zero = ((neg_x ^ x) >> max_shift) + 1;
+  // Conditional
+  return (is_neg_mask & 0) | (~is_neg_mask & is_zero);
+}
 /*
  * twosComp2SignMag - Convert from two's complement to sign-magnitude
  *   where the MSB is the sign bit
