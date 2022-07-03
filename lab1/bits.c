@@ -208,7 +208,12 @@ int evenBits(void) {
  *   Max ops: 5
  *   Rating: 2
  */
-int isEqual(int x, int y) { return 2; }
+int isEqual(int x, int y) {
+  // x XOR y returns 0 if x == y, since 1 ^ 1 = 0 and 0 ^ 0 = 0. If x != y,
+  // there will be at least 1 in the binary representation of x XOR y, since
+  // XOR-ing different bits yields 1.
+  return !(x ^ y);
+}
 /*
  * fitsBits - return 1 if x can be represented as an
  *  n-bit, two's complement integer.
