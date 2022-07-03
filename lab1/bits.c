@@ -353,7 +353,18 @@ int logicalNeg(int x) {
  *   Max ops: 15
  *   Rating: 4
  */
-int twosComp2SignMag(int x) { return 2; }
+int twosComp2SignMag(int x) {
+  // Returns x if x is positive or zero. When x is negative, converts it to
+  // positive and sets the MSB to 1.
+
+  const int max_shift = 31;
+  int is_pos = !(x >> max_shift);
+  int convert_to_pos = ~x + 1;
+  int sign_mag = convert_to_pos | (1 << max_shift);
+  // Conditional
+  int mask = ~is_pos + 1;
+  return (mask & x) | (~mask & sign_mag);
+}
 /*
  * isPower2 - returns 1 if x is a power of 2, and 0 otherwise
  *   Examples: isPower2(5) = 0, isPower2(8) = 1, isPower2(0) = 0
