@@ -266,14 +266,22 @@ int isGreater(int x, int y) {
   int diff = x ^ y;
   // "Smear" the leftmost 1 bit. E.g. 0b0101 becomes 0b0111.
   int smeared_diff = diff | diff >> 1;
+  // Data lab checker does not allow definitions after non-definition
+  // statements, so these variables must be defined in advance.
+  int only_left_diff = 0;
+  int x_flip_sign = 0;
+  int y_flip_all_except_sign = 0;
+  int greater_bits_x = 0;
+  int pos_x_neg_y = 0;
+  int x_has_greater_diff = 0;
   smeared_diff = smeared_diff | smeared_diff >> 2;
   smeared_diff = smeared_diff | smeared_diff >> 4;
   smeared_diff = smeared_diff | smeared_diff >> 8;
   smeared_diff = smeared_diff | smeared_diff >> 16;
   // Only keep the leftmost 1 bit
-  int only_left_diff = smeared_diff ^ (smeared_diff >> 1);
-  int x_flip_sign = x ^ t_min;
-  int y_flip_all_except_sign = y ^ t_max;
+  only_left_diff = smeared_diff ^ (smeared_diff >> 1);
+  x_flip_sign = x ^ t_min;
+  y_flip_all_except_sign = y ^ t_max;
   // Does two useful things:
   //
   // 1. If x is positive and y is negative, the MSB of this variable is set
@@ -283,9 +291,9 @@ int isGreater(int x, int y) {
   // 2. Captures the bits in x greater than the corresponding bits in y. For
   // example, if the LSB in x is 1 while in y it's 0, the LSB of this variable
   // will be set to 1.
-  int greater_bits_x = x_flip_sign & y_flip_all_except_sign;
+  greater_bits_x = x_flip_sign & y_flip_all_except_sign;
   // x >= 0 and y < 0 guarantees x > y.
-  int pos_x_neg_y = t_min & greater_bits_x;
+  pos_x_neg_y = t_min & greater_bits_x;
   // If the bit with the leftmost bit difference is greater in x than y, this
   // variable is set to a nonzero value. If the bit in y is greater, it's set to
   // zero.
@@ -294,7 +302,7 @@ int isGreater(int x, int y) {
   // will always be the MSB. But since this implies the MSB of x < MSB of y,
   // then this variable will always be set to zero, which makes sense given that
   // x < 0 and y >= 0 guarantees x < y.
-  int x_has_greater_diff = only_left_diff & greater_bits_x;
+  x_has_greater_diff = only_left_diff & greater_bits_x;
   return !!(pos_x_neg_y | x_has_greater_diff);
 }
 /*
