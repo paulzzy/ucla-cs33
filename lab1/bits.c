@@ -223,7 +223,16 @@ int isEqual(int x, int y) {
  *   Max ops: 15
  *   Rating: 2
  */
-int fitsBits(int x, int n) { return 2; }
+int fitsBits(int x, int n) {
+  // If x fits in n bits, then the resulting number will be -1 (all 1 bits) or 0
+  // (all 0 bits). Since one bit is used as the sign bit, the magnitude of x is
+  // actually stored in n - 1 bits, so x is right shifted n - 1.
+
+  const int neg_one = ~0;
+  int constrained = x >> (n + neg_one);
+  int is_neg_one = !(constrained ^ neg_one);
+  return !(constrained + is_neg_one);
+}
 // 3
 /*
  * conditional - same as x ? y : z
