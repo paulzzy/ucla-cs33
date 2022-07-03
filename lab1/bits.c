@@ -373,4 +373,21 @@ int twosComp2SignMag(int x) {
  *   Max ops: 20
  *   Rating: 4
  */
-int isPower2(int x) { return 2; }
+int isPower2(int x) {
+  // All 1s in the binary representation is -1 in decimal.
+  const int neg_one = ~0;
+  const int max_shift = 31;
+  // Ensures that 0 is returned if x < 0.
+  int is_pos_mask = ~(x >> max_shift);
+  // Ensures that 0 is returned if x == 0.
+  int is_nonzero_mask = ~!!x + 1;
+  // Ensures that 1 is returned if x == 1, since 2^0 == 1 is an edge case that
+  // is not detected normally.
+  int is_one = !(x ^ 1);
+  // When x is a power of 2 (except for 2^0), subtracting one yields all 1s in
+  // the bits less than the single 1 bit in x. The 1 bit in x is guaranteed to
+  // be in a different position from any of the 1s in x - 1, so `x & (x - 1)`
+  // always yields 0. Other values of x will have overlapping 1s with x - 1.
+  int is_pow_2 = !(x & (x + neg_one));
+  return (is_one | is_pow_2) & is_pos_mask & is_nonzero_mask;
+}
