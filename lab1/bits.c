@@ -185,7 +185,21 @@ int isTmax(int x) {
  *   Max ops: 8
  *   Rating: 1
  */
-int evenBits(void) { return 2; }
+int evenBits(void) {
+  // Manually sets the even bits to 1, doing 8 bits at a time to avoid using any
+  // variable with a value greater than 255.
+
+  const int even_bits = 0x55;
+  const int left_shift = 8;
+  int word = even_bits;
+  word = word << left_shift;
+  word = word + even_bits;
+  word = word << left_shift;
+  word = word + even_bits;
+  word = word << left_shift;
+  word = word + even_bits;
+  return word;
+}
 // 2
 /*
  * isEqual - return 1 if x == y, and 0 otherwise
