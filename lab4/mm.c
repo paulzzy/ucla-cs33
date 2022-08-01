@@ -92,8 +92,9 @@ static void checkblock(block_t *block);
 /* $begin mminit */
 int mm_init(void) {
   /* create the initial empty heap */
-  if ((prologue = mem_sbrk(CHUNKSIZE)) == (void *)-1)
+  if ((prologue = mem_sbrk(CHUNKSIZE)) == (void *)-1) {
     return -1;
+  }
   /* initialize the prologue */
   prologue->allocated = ALLOC;
   prologue->block_size = sizeof(header_t);
@@ -118,14 +119,15 @@ int mm_init(void) {
  */
 /* $begin mmmalloc */
 void *mm_malloc(size_t size) {
-  uint32_t asize;       /* adjusted block size */
-  uint32_t extendsize;  /* amount to extend heap if no fit */
-  uint32_t extendwords; /* number of words to extend heap if no fit */
-  block_t *block;
+  uint32_t asize = 0;       /* adjusted block size */
+  uint32_t extendsize = 0;  /* amount to extend heap if no fit */
+  uint32_t extendwords = 0; /* number of words to extend heap if no fit */
+  block_t *block = NULL;
 
   /* Ignore spurious requests */
-  if (size == 0)
+  if (size == 0) {
     return NULL;
+  }
 
   /* Adjust block size to include overhead and alignment reqs. */
   size += OVERHEAD;
@@ -175,8 +177,8 @@ void mm_free(void *payload) {
  * NO NEED TO CHANGE THIS CODE!
  */
 void *mm_realloc(void *ptr, size_t size) {
-  void *newp;
-  size_t copySize;
+  void *newp = NULL;
+  size_t copySize = 0;
 
   if ((newp = mm_malloc(size)) == NULL) {
     printf("ERROR: mm_malloc failed in mm_realloc\n");
@@ -184,8 +186,9 @@ void *mm_realloc(void *ptr, size_t size) {
   }
   block_t *block = ptr - sizeof(header_t);
   copySize = block->block_size;
-  if (size < copySize)
+  if (size < copySize) {
     copySize = size;
+  }
   memcpy(newp, ptr, copySize);
   mm_free(ptr);
   return newp;
@@ -197,26 +200,31 @@ void *mm_realloc(void *ptr, size_t size) {
 void mm_checkheap(int verbose) {
   block_t *block = prologue;
 
-  if (verbose)
+  if (verbose) {
     printf("Heap (%p):\n", prologue);
+  }
 
-  if (block->block_size != sizeof(header_t) || !block->allocated)
+  if (block->block_size != sizeof(header_t) || !block->allocated) {
     printf("Bad prologue header\n");
+  }
   checkblock(prologue);
 
   /* iterate through the heap (both free and allocated blocks will be present)
    */
   for (block = (void *)prologue + prologue->block_size; block->block_size > 0;
        block = (void *)block + block->block_size) {
-    if (verbose)
+    if (verbose) {
       printblock(block);
+    }
     checkblock(block);
   }
 
-  if (verbose)
+  if (verbose) {
     printblock(block);
-  if (block->block_size != 0 || !block->allocated)
+  }
+  if (block->block_size != 0 || !block->allocated) {
     printf("Bad epilogue header\n");
+  }
 }
 
 /* The remaining routines are internal helper routines */
@@ -226,11 +234,12 @@ void mm_checkheap(int verbose) {
  */
 /* $begin mmextendheap */
 static block_t *extend_heap(size_t words) {
-  block_t *block;
-  uint32_t size;
+  block_t *block = NULL;
+  uint32_t size = 0;
   size = words << 3; // words*8
-  if (size == 0 || (block = mem_sbrk(size)) == (void *)-1)
+  if (size == 0 || (block = mem_sbrk(size)) == (void *)-1) {
     return NULL;
+  }
   /* The newly acquired region will start directly after the epilogue block */
   /* Initialize free block header/footer and the new epilogue header */
   /* use old epilogue as new free block header */
@@ -288,7 +297,7 @@ static void place(block_t *block, size_t asize) {
  */
 static block_t *find_fit(size_t asize) {
   /* first fit search */
-  block_t *b;
+  block_t *b = NULL;
 
   for (b = (void *)prologue + prologue->block_size; b->block_size > 0;
        b = (void *)b + b->block_size) {
@@ -315,15 +324,13 @@ static block_t *coalesce(block_t *block) {
     return block;
   }
 
-  else if (prev_alloc && !next_alloc) { /* Case 2 */
+  if (prev_alloc && !next_alloc) { /* Case 2 */
     /* Update header of current block to include next block's size */
     block->block_size += next_header->block_size;
     /* Update footer of next block to reflect new size */
     footer_t *next_footer = get_footer(block);
     next_footer->block_size = block->block_size;
-  }
-
-  else if (!prev_alloc && next_alloc) { /* Case 3 */
+  } else if (!prev_alloc && next_alloc) { /* Case 3 */
     /* Update header of prev block to include current block's size */
     block_t *prev_block =
         (void *)prev_footer - prev_footer->block_size + sizeof(header_t);
@@ -332,9 +339,7 @@ static block_t *coalesce(block_t *block) {
     footer_t *footer = get_footer(prev_block);
     footer->block_size = prev_block->block_size;
     block = prev_block;
-  }
-
-  else { /* Case 4 */
+  } else { /* Case 4 */
     /* Update header of prev block to include current and next block's size */
     block_t *prev_block =
         (void *)prev_footer - prev_footer->block_size + sizeof(header_t);
@@ -353,7 +358,10 @@ static footer_t *get_footer(block_t *block) {
 }
 
 static void printblock(block_t *block) {
-  uint32_t hsize, halloc, fsize, falloc;
+  uint32_t hsize = 0;
+  uint32_t halloc = 0;
+  uint32_t fsize = 0;
+  uint32_t falloc = 0;
 
   hsize = block->block_size;
   halloc = block->allocated;
