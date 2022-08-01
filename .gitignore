@@ -20,8 +20,7 @@
 .DS_Store
 .vscode
 
-# Lab 1 files provided by Prof. Ghaforyfard
-
+# Lab 1 files provided by Prof. Ghaforyfard, not submitted
 lab1/btest.c
 lab1/Makefile
 lab1/ishow.c
@@ -31,3 +30,19 @@ lab1/btest.h
 lab1/dlc
 lab1/decl.c
 lab1/bits.h
+
+# Lab 4 files provided by Prof. Ghaforyfard, not submitted
+lab4/clock.c
+lab4/clock.h
+lab4/config.h
+lab4/fcyc.c
+lab4/fcyc.h
+lab4/fsecs.c
+lab4/fsecs.h
+lab4/ftimer.c
+lab4/ftimer.h
+lab4/mdriver.c
+lab4/memlib.c
+lab4/memlib.h
+lab4/mm.h
+lab4/submission-client.py
