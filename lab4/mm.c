@@ -50,7 +50,7 @@ typedef struct {
 
 typedef header_t footer_t;
 
-typedef struct {
+typedef struct block_t {
   uint32_t allocated : 1;
   uint32_t block_size : 31;
   uint32_t _;
@@ -109,10 +109,10 @@ int mm_init(void) {
 
   // Initialize the explicit free list (uses a doubly-linked list)
   // prologue <-> init_block
-  prologue->body.next = (struct block_t *)init_block;
-  prologue->body.prev = (struct block_t *)init_block;
-  init_block->body.next = (struct block_t *)prologue;
-  init_block->body.prev = (struct block_t *)prologue;
+  prologue->body.next = init_block;
+  prologue->body.prev = init_block;
+  init_block->body.next = prologue;
+  init_block->body.prev = prologue;
 
   /* initialize the epilogue - block size 0 will be used as a terminating
    * condition */
