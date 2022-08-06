@@ -98,6 +98,7 @@ int mm_init(void) {
   /* initialize the prologue */
   prologue->allocated = ALLOC;
   prologue->block_size = sizeof(header_t);
+
   /* initialize the first free block */
   block_t *init_block = (void *)prologue + sizeof(header_t);
   init_block->allocated = FREE;
@@ -105,6 +106,14 @@ int mm_init(void) {
   footer_t *init_footer = get_footer(init_block);
   init_footer->allocated = FREE;
   init_footer->block_size = init_block->block_size;
+
+  // Initialize the explicit free list (uses a doubly-linked list)
+  // prologue <-> init_block
+  prologue->body.next = (struct block_t *)init_block;
+  prologue->body.prev = (struct block_t *)init_block;
+  init_block->body.next = (struct block_t *)prologue;
+  init_block->body.prev = (struct block_t *)prologue;
+
   /* initialize the epilogue - block size 0 will be used as a terminating
    * condition */
   block_t *epilogue = (void *)init_block + init_block->block_size;
