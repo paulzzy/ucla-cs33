@@ -281,10 +281,10 @@ void mm_checkheap(int verbose) {
 static void list_push(block_t *block) {
 
 #ifdef DEBUG_OUTPUT
-  printf("\nDEBUG LIST_PUSH: %d\n", global_counter);
-  printf("head: %p\n", head);
-  printf("block: %p\n", block);
-  global_counter++;
+  DEBUG_PRINT("list_push");
+  printf("head: %p (%d bytes)\n", head, (head != NULL) ? head->block_size : 0);
+  printf("block: %p (%d bytes)\n", block,
+         (block != NULL) ? block->block_size : 0);
 
   CHECK_IN_LIST(block);
   CHECK_EXPLICIT_LIST(LIST_DEPTH);
@@ -313,10 +313,12 @@ static void list_push(block_t *block) {
 static void list_remove(block_t *block) {
 
 #ifdef DEBUG_OUTPUT
-  printf("\nDEBUG LIST_REMOVE: %d\n", global_counter);
-  printf("head: %p\n", head);
-  printf("following: %p\n", block->body.next);
-  printf("preceding: %p\n", block->body.prev);
+  DEBUG_PRINT("list_remove");
+  printf("head: %p (%d bytes)\n", head, (head != NULL) ? head->block_size : 0);
+  printf("following: %p (%d bytes)\n", block->body.next,
+         (block->body.next != NULL) ? block->body.next->block_size : 0);
+  printf("preceding: %p (%d bytes)\n", block->body.prev,
+         (block->body.prev != NULL) ? block->body.prev->block_size : 0);
   global_counter++;
 
   CHECK_EXPLICIT_LIST(LIST_DEPTH);
@@ -554,13 +556,13 @@ static void debug_explicit_list(int depth) {
 
   for (; f_idx < depth; f_idx++) {
     if (forward->body.next == NULL) {
-      printf("%p (tail)\n", forward);
+      printf("%p (%d bytes) TAIL -> ", forward, forward->block_size);
       f_len++;
       printf("  Forward traversal: %d elements.\n", f_len);
       break;
     }
 
-    printf("%p -> ", forward);
+    printf("%p (%d bytes) -> ", forward, forward->block_size);
     forward = forward->body.next;
     f_len++;
   }
@@ -575,13 +577,13 @@ static void debug_explicit_list(int depth) {
 
   for (; b_idx < depth; b_idx++) {
     if (backward->body.prev == NULL) {
-      printf("%p (head)\n", backward);
+      printf("%p (%d bytes) HEAD -> ", backward, backward->block_size);
       b_len++;
       printf("  Backward traversal: %d elements.\n", b_len);
       break;
     }
 
-    printf("%p -> ", backward);
+    printf("%p (%d bytes) -> ", backward, backward->block_size);
     backward = backward->body.prev;
     b_len++;
   }
@@ -603,14 +605,16 @@ static void debug_check_in_list(block_t *block) {
   global_counter++;
 
   if (head == NULL) {
-    printf("Validated: block %p (empty list)\n");
+    printf("Validated: block %p (%d bytes) EMPTY LIST\n", block,
+           block->block_size);
     return;
   }
 
   int list_idx = 0;
   for (block_t *current = head; current != NULL; current = current->body.next) {
     if (block == current) {
-      printf("ERROR: block %p already in list at index %d\n", block, list_idx);
+      printf("ERROR: block %p (%d bytes) already in list at index %d\n", block,
+             block->block_size, list_idx);
       exit(1);
       return;
     }
@@ -618,7 +622,7 @@ static void debug_check_in_list(block_t *block) {
     list_idx++;
   }
 
-  printf("Validated: block %p\n", block);
+  printf("Validated: block %p (%d bytes)\n", block, block->block_size);
 }
 
 static void debug_print(const char *message) {
