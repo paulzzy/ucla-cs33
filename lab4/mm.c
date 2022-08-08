@@ -349,17 +349,16 @@ static void list_remove(block_t *block) {
  * find_fit - Find a fit for a block with asize bytes
  */
 static block_t *find_fit(size_t asize) {
-  /* first fit search */
-  block_t *b = NULL;
-
-  for (b = (void *)prologue + prologue->block_size; b->block_size > 0;
-       b = (void *)b + b->block_size) {
-    /* block must be free and the size must be large enough to hold the request
+  // First-fit search of explicit free list
+  for (block_t *current = head; current != NULL; current = current->body.next) {
+    /* block must be free and the size must be large enough to hold the
+     * request
      */
-    if (!b->allocated && asize <= b->block_size) {
-      return b;
+    if (asize <= current->block_size) {
+      return current;
     }
   }
+
   return NULL; /* no fit */
 }
 
