@@ -89,6 +89,7 @@ static const int LIST_DEPTH = 1000;
 
 #define CHECK_EXPLICIT_LIST(list_depth)
 #define CHECK_IN_LIST(block)
+#define DEBUG_PRINT(message)
 
 #endif
 
@@ -97,6 +98,7 @@ static const int LIST_DEPTH = 1000;
 
 #define CHECK_EXPLICIT_LIST(list_depth) debug_explicit_list(list_depth)
 #define CHECK_IN_LIST(block) debug_check_in_list(block)
+#define DEBUG_PRINT(message) debug_print(message);
 
 #endif
 
@@ -108,6 +110,7 @@ static void list_remove(block_t *block);
 // Debugging functions
 static void debug_explicit_list(int depth);
 static void debug_check_in_list(block_t *block);
+static void debug_print(const char *message);
 
 // Original functions given by instructor
 static void mm_checkheap(int verbose);
@@ -372,6 +375,7 @@ static block_t *find_fit(size_t asize) {
  */
 /* $begin mmextendheap */
 static block_t *extend_heap(size_t words) {
+  DEBUG_PRINT("extend_heap");
   block_t *block = NULL;
   uint32_t size = 0;
   size = words << 3; // words*8
@@ -442,6 +446,7 @@ static void place(block_t *block, size_t asize) {
  * coalesce - boundary tag coalescing. Return ptr to coalesced block
  */
 static block_t *coalesce(block_t *block) {
+  DEBUG_PRINT("coalesce");
   footer_t *prev_footer = (void *)block - sizeof(header_t);
   header_t *next_header = (void *)block + block->block_size;
   bool prev_alloc = prev_footer->allocated;
@@ -614,4 +619,9 @@ static void debug_check_in_list(block_t *block) {
   }
 
   printf("Validated: block %p\n", block);
+}
+
+static void debug_print(const char *message) {
+  printf("DEBUG %s: %d", message, global_counter);
+  global_counter++;
 }
