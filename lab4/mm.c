@@ -78,6 +78,9 @@ enum block_state { FREE, ALLOC };
 
 /* Global variables */
 static block_t *prologue; /* pointer to first block */
+static block_t *head;     // Head pointer of explicit free list (null-terminated
+                          // doubly-linked list)
+
 // Debug variables
 static int global_counter = 1;
 static const int LIST_DEPTH = 1000;
@@ -98,6 +101,10 @@ static const int LIST_DEPTH = 1000;
 #endif
 
 /* function prototypes for internal helper routines */
+// Explicit free list functions
+static void list_push(block_t *block);
+static void list_remove(block_t *block);
+
 // Debugging functions
 static void debug_explicit_list(int depth);
 static void debug_check_in_list(block_t *block);
@@ -264,68 +271,83 @@ void mm_checkheap(int verbose) {
 
 /* The remaining routines are internal helper routines */
 
-/*
- * extend_heap - Extend heap with free block and return its block pointer
- */
-/* $begin mmextendheap */
-static block_t *extend_heap(size_t words) {
-  block_t *block = NULL;
-  uint32_t size = 0;
-  size = words << 3; // words*8
-  if (size == 0 || (block = mem_sbrk(size)) == (void *)-1) {
-    return NULL;
-  }
-  /* The newly acquired region will start directly after the epilogue block */
-  /* Initialize free block header/footer and the new epilogue header */
-  /* use old epilogue as new free block header */
-  block = (void *)block - sizeof(header_t);
-  block->allocated = FREE;
-  block->block_size = size;
-  /* free block footer */
-  footer_t *block_footer = get_footer(block);
-  block_footer->allocated = FREE;
-  block_footer->block_size = block->block_size;
-  /* new epilogue header */
-  header_t *new_epilogue = (void *)block_footer + sizeof(header_t);
-  new_epilogue->allocated = ALLOC;
-  new_epilogue->block_size = 0;
-  /* Coalesce if the previous block was free */
-  return coalesce(block);
-}
-/* $end mmextendheap */
+// Pushes a block to the front of the explicit free list
+//
+// Warning: Only use to push free blocks
+static void list_push(block_t *block) {
 
-/*
- * place - Place block of asize bytes at start of free block block
- *         and split if remainder would be at least minimum block size
- */
-/* $begin mmplace */
-static void place(block_t *block, size_t asize) {
-  size_t split_size = block->block_size - asize;
-  if (split_size >= MIN_BLOCK_SIZE) {
-    /* split the block by updating the header and marking it allocated*/
-    block->block_size = asize;
-    block->allocated = ALLOC;
-    /* set footer of allocated block*/
-    footer_t *footer = get_footer(block);
-    footer->block_size = asize;
-    footer->allocated = ALLOC;
-    /* update the header of the new free block */
-    block_t *new_block = (void *)block + block->block_size;
-    new_block->block_size = split_size;
-    new_block->allocated = FREE;
-    /* update the footer of the new free block */
-    footer_t *new_footer = get_footer(new_block);
-    new_footer->block_size = split_size;
-    new_footer->allocated = FREE;
-  } else {
-    /* splitting the block will cause a splinter so we just include it in the
-     * allocated block */
-    block->allocated = ALLOC;
-    footer_t *footer = get_footer(block);
-    footer->allocated = ALLOC;
+#ifdef DEBUG_OUTPUT
+  printf("\nDEBUG LIST_PUSH: %d\n", global_counter);
+  printf("head: %p\n", head);
+  printf("block: %p\n", block);
+  global_counter++;
+
+  CHECK_IN_LIST(block);
+  CHECK_EXPLICIT_LIST(LIST_DEPTH);
+#endif
+
+  // Zero elements
+  if (head == NULL) {
+    head = block;
+    block->body.next = NULL;
+    block->body.prev = NULL;
+    return;
   }
+
+  block->body.next = head;
+  block->body.prev = NULL;
+
+  head->body.prev = block;
+
+  head = block;
 }
-/* $end mmplace */
+
+// Removes a block from the explicit free list
+//
+// Warning: Assumes block is in list
+// Warning: Only use to remove allocated blocks
+static void list_remove(block_t *block) {
+
+#ifdef DEBUG_OUTPUT
+  printf("\nDEBUG LIST_REMOVE: %d\n", global_counter);
+  printf("head: %p\n", head);
+  printf("following: %p\n", block->body.next);
+  printf("preceding: %p\n", block->body.prev);
+  global_counter++;
+
+  CHECK_EXPLICIT_LIST(LIST_DEPTH);
+#endif
+
+  if (head == NULL || block == NULL) {
+    return;
+  }
+
+  // One-element list
+  if (head->body.next == NULL) {
+    head = NULL;
+    return;
+  }
+
+  // Removal block is head
+  if (head == block) {
+    head = block->body.next;
+    head->body.prev = NULL;
+  }
+
+  block_t *preceding = block->body.prev;
+  block_t *following = block->body.next;
+
+  if (preceding != NULL) {
+    preceding->body.next = block->body.next;
+  }
+
+  if (following != NULL) {
+    following->body.prev = block->body.prev;
+  }
+
+  block->body.next = NULL;
+  block->body.prev = NULL;
+}
 
 /*
  * find_fit - Find a fit for a block with asize bytes
