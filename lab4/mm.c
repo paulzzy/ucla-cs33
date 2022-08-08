@@ -140,12 +140,8 @@ int mm_init(void) {
   init_footer->allocated = FREE;
   init_footer->block_size = init_block->block_size;
 
-  // Initialize the explicit free list (uses a doubly-linked list)
-  // prologue <-> init_block
-  prologue->body.next = init_block;
-  prologue->body.prev = init_block;
-  init_block->body.next = prologue;
-  init_block->body.prev = prologue;
+  // Initialize explicit free list
+  list_push(init_block);
 
   /* initialize the epilogue - block size 0 will be used as a terminating
    * condition */
