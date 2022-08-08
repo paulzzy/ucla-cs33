@@ -598,6 +598,7 @@ static void debug_check_in_list(block_t *block) {
   global_counter++;
 
   if (head == NULL) {
+    printf("Validated: block %p (empty list)\n");
     return;
   }
 
@@ -612,5 +613,5 @@ static void debug_check_in_list(block_t *block) {
     list_idx++;
   }
 
-  printf("Validated: block %p.\n", block);
+  printf("Validated: block %p\n", block);
 }
