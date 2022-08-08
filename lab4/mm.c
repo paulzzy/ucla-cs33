@@ -363,6 +363,40 @@ static block_t *find_fit(size_t asize) {
 }
 
 /*
+ * extend_heap - Extend heap with free block and return its block pointer
+ */
+/* $begin mmextendheap */
+static block_t *extend_heap(size_t words) {
+  block_t *block = NULL;
+  uint32_t size = 0;
+  size = words << 3; // words*8
+  if (size == 0 || (block = mem_sbrk(size)) == (void *)-1) {
+    return NULL;
+  }
+  /* The newly acquired region will start directly after the epilogue block */
+  /* Initialize free block header/footer and the new epilogue header */
+  /* use old epilogue as new free block header */
+  block = (void *)block - sizeof(header_t);
+  block->allocated = FREE;
+  block->block_size = size;
+  /* free block footer */
+  footer_t *block_footer = get_footer(block);
+  block_footer->allocated = FREE;
+  block_footer->block_size = block->block_size;
+  /* new epilogue header */
+  header_t *new_epilogue = (void *)block_footer + sizeof(header_t);
+  new_epilogue->allocated = ALLOC;
+  new_epilogue->block_size = 0;
+
+  // Push new free block onto explicit free list
+  list_push(block);
+
+  /* Coalesce if the previous block was free */
+  return coalesce(block);
+}
+/* $end mmextendheap */
+
+/*
  * place - Place block of asize bytes at start of free block block
  *         and split if remainder would be at least minimum block size
  */
