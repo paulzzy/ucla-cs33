@@ -408,6 +408,8 @@ static block_t *extend_heap(size_t words) {
 /* $begin mmplace */
 static void place(block_t *block, size_t asize) {
   size_t split_size = block->block_size - asize;
+  list_remove(block);
+
   if (split_size >= MIN_BLOCK_SIZE) {
     /* split the block by updating the header and marking it allocated*/
     block->block_size = asize;
@@ -433,8 +435,6 @@ static void place(block_t *block, size_t asize) {
     footer_t *footer = get_footer(block);
     footer->allocated = ALLOC;
   }
-
-  list_remove(block);
 }
 /* $end mmplace */
 
