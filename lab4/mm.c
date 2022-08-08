@@ -32,6 +32,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define DEBUG_OUTPUT
+
 /* Your info */
 team_t team = {
     /* First and last name */
@@ -76,8 +78,32 @@ enum block_state { FREE, ALLOC };
 
 /* Global variables */
 static block_t *prologue; /* pointer to first block */
+// Debug variables
+static int global_counter = 1;
+static const int LIST_DEPTH = 1000;
+
+#ifndef DEBUG_OUTPUT
+
+#define CHECK_EXPLICIT_LIST(list_depth)
+#define CHECK_IN_LIST(block)
+
+#endif
+
+// Debug macros
+#ifdef DEBUG_OUTPUT
+
+#define CHECK_EXPLICIT_LIST(list_depth) debug_explicit_list(list_depth)
+#define CHECK_IN_LIST(block) debug_check_in_list(block)
+
+#endif
 
 /* function prototypes for internal helper routines */
+// Debugging functions
+static void debug_explicit_list(int depth);
+static void debug_check_in_list(block_t *block);
+
+// Original functions given by instructor
+static void mm_checkheap(int verbose);
 static block_t *extend_heap(size_t words);
 static void place(block_t *block, size_t asize);
 static block_t *find_fit(size_t asize);
@@ -395,4 +421,88 @@ static void checkblock(block_t *block) {
   if (block->block_size != footer->block_size) {
     printf("Error: header does not match footer\n");
   }
+}
+
+static void debug_explicit_list(int depth) {
+  printf("\nDEBUG EXPLICIT LIST: %d\n", global_counter);
+  global_counter++;
+
+  if (head == NULL) {
+    printf("0 elements.\n");
+    return;
+  }
+
+  int f_len = 0;
+  int b_len = 0;
+
+  // Traverse forward.
+  block_t *forward = head;
+  int f_idx = 0;
+
+  for (; f_idx < depth; f_idx++) {
+    if (forward->body.next == NULL) {
+      printf("%p (tail)\n", forward);
+      f_len++;
+      printf("  Forward traversal: %d elements.\n", f_len);
+      break;
+    }
+
+    printf("%p -> ", forward);
+    forward = forward->body.next;
+    f_len++;
+  }
+
+  if (f_idx == depth) {
+    printf("\nWARNING: Reached forward depth limit.\n");
+  }
+
+  // Traverse backwards.
+  block_t *backward = forward;
+  int b_idx = 0;
+
+  for (; b_idx < depth; b_idx++) {
+    if (backward->body.prev == NULL) {
+      printf("%p (head)\n", backward);
+      b_len++;
+      printf("  Backward traversal: %d elements.\n", b_len);
+      break;
+    }
+
+    printf("%p -> ", backward);
+    backward = backward->body.prev;
+    b_len++;
+  }
+
+  if (b_idx == depth) {
+    printf("\nWARNING: Reached backward depth limit.\n");
+  }
+
+  if (f_len != b_len) {
+    printf("ERROR: length mismatch for forward and backward traversal.\n");
+    exit(1);
+  } else {
+    printf("Validated: equal lengths for forward and backward traversal.\n");
+  }
+}
+
+static void debug_check_in_list(block_t *block) {
+  printf("\nDEBUG CHECK IN LIST: %d\n", global_counter);
+  global_counter++;
+
+  if (head == NULL) {
+    return;
+  }
+
+  int list_idx = 0;
+  for (block_t *current = head; current != NULL; current = current->body.next) {
+    if (block == current) {
+      printf("ERROR: block %p already in list at index %d\n", block, list_idx);
+      exit(1);
+      return;
+    }
+
+    list_idx++;
+  }
+
+  printf("Validated: block %p.\n", block);
 }
