@@ -201,10 +201,15 @@ void *mm_malloc(size_t size) {
  */
 /* $begin mmfree */
 void mm_free(void *payload) {
+  // Set header and footer to free
   block_t *block = payload - sizeof(header_t);
   block->allocated = FREE;
   footer_t *footer = get_footer(block);
   footer->allocated = FREE;
+
+  // Push to explicit free list
+  list_push(block);
+
   coalesce(block);
 }
 
