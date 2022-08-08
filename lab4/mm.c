@@ -442,27 +442,42 @@ static block_t *coalesce(block_t *block) {
   bool prev_alloc = prev_footer->allocated;
   bool next_alloc = next_header->allocated;
 
+  block_t *next_block = (void *)block + block->block_size;
+  block_t *prev_block =
+      (void *)prev_footer - prev_footer->block_size + sizeof(header_t);
+
   if (prev_alloc && next_alloc) { /* Case 1 */
     /* no coalesceing */
     return block;
   }
 
   if (prev_alloc && !next_alloc) { /* Case 2 */
+    // Remove coalesced free blocks from explicit free list
+    list_remove(block);
+    list_remove(next_block);
+
     /* Update header of current block to include next block's size */
     block->block_size += next_header->block_size;
     /* Update footer of next block to reflect new size */
     footer_t *next_footer = get_footer(block);
     next_footer->block_size = block->block_size;
   } else if (!prev_alloc && next_alloc) { /* Case 3 */
+    // Remove coalesced free blocks from explicit free list
+    list_remove(block);
+    list_remove(prev_block);
+
     /* Update header of prev block to include current block's size */
-    block_t *prev_block =
-        (void *)prev_footer - prev_footer->block_size + sizeof(header_t);
     prev_block->block_size += block->block_size;
     /* Update footer of current block to reflect new size */
     footer_t *footer = get_footer(prev_block);
     footer->block_size = prev_block->block_size;
     block = prev_block;
   } else { /* Case 4 */
+    // Remove coalesced free blocks from explicit free list
+    list_remove(block);
+    list_remove(prev_block);
+    list_remove(next_block);
+
     /* Update header of prev block to include current and next block's size */
     block_t *prev_block =
         (void *)prev_footer - prev_footer->block_size + sizeof(header_t);
