@@ -364,6 +364,43 @@ static block_t *find_fit(size_t asize) {
 }
 
 /*
+ * place - Place block of asize bytes at start of free block block
+ *         and split if remainder would be at least minimum block size
+ */
+/* $begin mmplace */
+static void place(block_t *block, size_t asize) {
+  size_t split_size = block->block_size - asize;
+  if (split_size >= MIN_BLOCK_SIZE) {
+    /* split the block by updating the header and marking it allocated*/
+    block->block_size = asize;
+    block->allocated = ALLOC;
+    /* set footer of allocated block*/
+    footer_t *footer = get_footer(block);
+    footer->block_size = asize;
+    footer->allocated = ALLOC;
+    /* update the header of the new free block */
+    block_t *new_block = (void *)block + block->block_size;
+    new_block->block_size = split_size;
+    new_block->allocated = FREE;
+    /* update the footer of the new free block */
+    footer_t *new_footer = get_footer(new_block);
+    new_footer->block_size = split_size;
+    new_footer->allocated = FREE;
+
+    list_push(new_block);
+  } else {
+    /* splitting the block will cause a splinter so we just include it in the
+     * allocated block */
+    block->allocated = ALLOC;
+    footer_t *footer = get_footer(block);
+    footer->allocated = ALLOC;
+  }
+
+  list_remove(block);
+}
+/* $end mmplace */
+
+/*
  * coalesce - boundary tag coalescing. Return ptr to coalesced block
  */
 static block_t *coalesce(block_t *block) {
