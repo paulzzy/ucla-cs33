@@ -112,6 +112,7 @@ static const int LIST_DEPTH = 1000;
 
 /* function prototypes for internal helper routines */
 // Explicit free list functions
+static block_t *which_list(block_t *block);
 static void list_push(block_t *block);
 static void list_remove(block_t *block);
 
@@ -295,6 +296,29 @@ void mm_checkheap(int verbose) {
 }
 
 /* The remaining routines are internal helper routines */
+
+// LOG2 macro from https://stackoverflow.com/a/11376759/
+#define LOG2(X)                                                                \
+  ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((X)) - 1))
+
+// Finds the free list that a block belongs to, returning the head pointer for
+// the free list
+static block_t *which_list(block_t *block) {
+  const uint32_t SMALL_BLOCK = 64;
+
+  uint32_t size = block->block_size;
+
+  // First 64 lists hold small sizes, specifically 1 byte for the first, 2 bytes
+  // for the second, and so on until 64 bytes for the 64th list.
+  if (size <= SMALL_BLOCK) {
+    return segregated_lists[size - 1];
+  }
+
+  uint32_t big_block_idx = LOG2(size - SMALL_BLOCK) + SMALL_BLOCK;
+  big_block_idx = (big_block_idx > LIST_NUM - 1) ? LIST_NUM - 1 : big_block_idx;
+
+  return segregated_lists[big_block_idx];
+}
 
 // Pushes a block to the front of the explicit free list
 //
