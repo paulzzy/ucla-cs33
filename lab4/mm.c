@@ -320,10 +320,11 @@ static block_t *which_list(block_t *block) {
   return segregated_lists[big_block_idx];
 }
 
-// Pushes a block to the front of the explicit free list
+// Pushes a block to the front of an explicit free list
 //
 // Warning: Only use to push free blocks
 static void list_push(block_t *block) {
+  block_t *head = which_list(block);
 
 #ifdef DEBUG_OUTPUT
   DEBUG_PRINT("list_push");
@@ -351,11 +352,12 @@ static void list_push(block_t *block) {
   head = block;
 }
 
-// Removes a block from the explicit free list
+// Removes a block from an explicit free list
 //
 // Warning: Assumes block is in list
 // Warning: Only use to remove allocated blocks
 static void list_remove(block_t *block) {
+  block_t *head = which_list(block);
 
 #ifdef DEBUG_OUTPUT
   DEBUG_PRINT("list_remove");
