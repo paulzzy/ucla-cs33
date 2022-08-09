@@ -80,9 +80,11 @@ enum block_state { FREE, ALLOC };
 /* Global variables */
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static block_t *prologue; /* pointer to first block */
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static block_t *head; // Head pointer of explicit free list (null-terminated
-                      // doubly-linked list)
+static block_t
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    **segregated_lists; // Pointer to explicit free lists on the heap (each list
+                        // is a null-terminated doubly-linked list)
+static const uint32_t LIST_NUM = 128;
 
 // Debug variables
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -134,6 +136,17 @@ static void checkblock(block_t *block);
  */
 /* $begin mminit */
 int mm_init(void) {
+  // Initialize segregated free lists, located before the heap
+  segregated_lists = mem_sbrk((int)(sizeof(block_t *) * LIST_NUM));
+
+  if (segregated_lists == (block_t **)UINTPTR_MAX) {
+    return -1;
+  }
+
+  for (int i = 0; i < LIST_NUM; i++) {
+    segregated_lists[i] = NULL;
+  }
+
   /* create the initial empty heap */
   if ((prologue = mem_sbrk(CHUNKSIZE)) == (block_t *)UINTPTR_MAX) {
     return -1;
