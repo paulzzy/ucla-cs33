@@ -320,11 +320,16 @@ static void list_remove(block_t *block) {
 #ifdef DEBUG_OUTPUT
   DEBUG_PRINT("list_remove");
   printf("head: %p (%d bytes)\n", head, (head != NULL) ? head->block_size : 0);
-  printf("following: %p (%d bytes)\n", block->body.next,
-         (block->body.next != NULL) ? block->body.next->block_size : 0);
-  printf("preceding: %p (%d bytes)\n", block->body.prev,
-         (block->body.prev != NULL) ? block->body.prev->block_size : 0);
-  global_counter++;
+  printf("block: %p (%d bytes)\n", block,
+         (block != NULL) ? block->block_size : 0);
+  printf(
+      "following: %p (%d bytes)\n", (block != NULL) ? block->body.next : NULL,
+      (block != NULL && block->body.next != NULL) ? block->body.next->block_size
+                                                  : 0);
+  printf(
+      "preceding: %p (%d bytes)\n", (block != NULL) ? block->body.prev : NULL,
+      (block != NULL && block->body.prev != NULL) ? block->body.prev->block_size
+                                                  : 0);
 
   CHECK_EXPLICIT_LIST(LIST_DEPTH);
 #endif
@@ -505,6 +510,7 @@ static block_t *coalesce(block_t *block) {
     block = prev_block;
   }
 
+  list_push(block);
   return block;
 }
 
@@ -562,7 +568,7 @@ static void debug_explicit_list(int depth) {
 
   for (; f_idx < depth; f_idx++) {
     if (forward->body.next == NULL) {
-      printf("%p (%d bytes) TAIL -> ", forward, forward->block_size);
+      printf("%p (%d bytes) TAIL\n", forward, forward->block_size);
       f_len++;
       printf("  Forward traversal: %d elements.\n", f_len);
       break;
@@ -583,7 +589,7 @@ static void debug_explicit_list(int depth) {
 
   for (; b_idx < depth; b_idx++) {
     if (backward->body.prev == NULL) {
-      printf("%p (%d bytes) HEAD -> ", backward, backward->block_size);
+      printf("%p (%d bytes) HEAD\n", backward, backward->block_size);
       b_len++;
       printf("  Backward traversal: %d elements.\n", b_len);
       break;
@@ -602,7 +608,9 @@ static void debug_explicit_list(int depth) {
     printf("ERROR: length mismatch for forward and backward traversal.\n");
     exit(1);
   } else {
-    printf("Validated: equal lengths for forward and backward traversal.\n");
+    printf(
+        "Validated: equal lengths (%d) for forward and backward traversal.\n",
+        f_len);
   }
 }
 
@@ -632,6 +640,6 @@ static void debug_check_in_list(block_t *block) {
 }
 
 static void debug_print(const char *message) {
-  printf("DEBUG %s: %d", message, global_counter);
+  printf("\nDEBUG %s: %d\n", message, global_counter);
   global_counter++;
 }
