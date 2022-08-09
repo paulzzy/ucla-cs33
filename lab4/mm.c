@@ -32,7 +32,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define DEBUG_OUTPUT
+// #define DEBUG_OUTPUT
 
 // Your info
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -93,6 +93,7 @@ static const int LIST_DEPTH = 1000;
 
 #define CHECK_EXPLICIT_LIST(list_depth)
 #define CHECK_IN_LIST(block)
+#define VERIFY_IN_LIST(block)
 #define DEBUG_PRINT(message)
 
 #endif
@@ -102,7 +103,8 @@ static const int LIST_DEPTH = 1000;
 
 #define CHECK_EXPLICIT_LIST(list_depth) debug_explicit_list(list_depth)
 #define CHECK_IN_LIST(block) debug_check_in_list(block)
-#define DEBUG_PRINT(message) debug_print(message);
+#define VERIFY_IN_LIST(block) debug_verify_in_list(block)
+#define DEBUG_PRINT(message) debug_print(message)
 
 #endif
 
@@ -115,6 +117,7 @@ static void list_remove(block_t *block);
 static void debug_explicit_list(int depth);
 static void debug_check_in_list(block_t *block);
 static void debug_print(const char *message);
+static void debug_verify_in_list(block_t *block);
 
 // Original functions given by instructor
 static void mm_checkheap(int verbose);
@@ -372,6 +375,8 @@ static void list_remove(block_t *block) {
  * find_fit - Find a fit for a block with asize bytes
  */
 static block_t *find_fit(size_t asize) {
+  DEBUG_PRINT("find_fit");
+  CHECK_EXPLICIT_LIST(LIST_DEPTH);
   // First-fit search of explicit free list
   for (block_t *current = head; current != NULL; current = current->body.next) {
     /* block must be free and the size must be large enough to hold the
@@ -477,6 +482,7 @@ static block_t *coalesce(block_t *block) {
   }
 
   if (prev_alloc && !next_alloc) { /* Case 2 */
+    VERIFY_IN_LIST(next_block);
     // Remove coalesced free blocks from explicit free list
     list_remove(block);
     list_remove(next_block);
@@ -487,6 +493,7 @@ static block_t *coalesce(block_t *block) {
     footer_t *next_footer = get_footer(block);
     next_footer->block_size = block->block_size;
   } else if (!prev_alloc && next_alloc) { /* Case 3 */
+    VERIFY_IN_LIST(prev_block);
     // Remove coalesced free blocks from explicit free list
     list_remove(block);
     list_remove(prev_block);
@@ -498,6 +505,8 @@ static block_t *coalesce(block_t *block) {
     footer->block_size = prev_block->block_size;
     block = prev_block;
   } else { /* Case 4 */
+    VERIFY_IN_LIST(prev_block);
+    VERIFY_IN_LIST(next_block);
     // Remove coalesced free blocks from explicit free list
     list_remove(block);
     list_remove(prev_block);
@@ -644,4 +653,23 @@ static void debug_check_in_list(block_t *block) {
 static void debug_print(const char *message) {
   printf("\nDEBUG %s: %d\n", message, global_counter);
   global_counter++;
+}
+
+static void debug_verify_in_list(block_t *block) {
+  printf("\nDEBUG VERIFY IN LIST: %d\n", global_counter);
+  global_counter++;
+
+  int list_idx = 0;
+  for (block_t *current = head; current != NULL; current = current->body.next) {
+    if (block == current) {
+      printf("Validated: block %p (%d bytes) in list at index %d\n", block,
+             block->block_size, list_idx);
+      return;
+    }
+
+    list_idx++;
+  }
+
+  printf("ERROR: block %p (%d bytes) not in list\n", block, block->block_size);
+  exit(1);
 }
