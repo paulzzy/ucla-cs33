@@ -416,17 +416,24 @@ static void list_remove(block_t *block) {
 static block_t *find_fit(size_t asize) {
   DEBUG_PRINT("find_fit");
   CHECK_EXPLICIT_LIST(LIST_DEPTH);
-  // First-fit search of explicit free list
-  for (block_t *current = head; current != NULL; current = current->body.next) {
-    /* block must be free and the size must be large enough to hold the
-     * request
-     */
-    if (asize <= current->block_size) {
-      return current;
-    }
-  }
 
-  return NULL; /* no fit */
+  // Loop through segregated lists to find a useful free block for allocation
+  for (size_t i = asize; i < LIST_NUM; i++) {
+    block_t *head = segregated_lists[i];
+
+    // First-fit search of explicit free list
+    for (block_t *current = head; current != NULL;
+         current = current->body.next) {
+      /* block must be free and the size must be large enough to hold the
+       * request
+       */
+      if (asize <= current->block_size) {
+        return current;
+      }
+    }
+
+    return NULL; /* no fit */
+  }
 }
 
 /*
