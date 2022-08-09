@@ -513,7 +513,6 @@ static block_t *coalesce(block_t *block) {
     block = prev_block;
   }
 
-  list_push(block);
   return block;
 }
 
