@@ -103,9 +103,6 @@ static const int LIST_DEPTH = 1000;
 // Debug macros
 #ifdef DEBUG_OUTPUT
 
-#define CHECK_EXPLICIT_LIST(list_depth) debug_explicit_list(list_depth)
-#define CHECK_IN_LIST(block) debug_check_in_list(block)
-#define VERIFY_IN_LIST(block) debug_verify_in_list(block)
 #define DEBUG_PRINT(message) debug_print(message)
 
 #endif
@@ -117,10 +114,7 @@ static void list_push(block_t *block);
 static void list_remove(block_t *block);
 
 // Debugging functions
-static void debug_explicit_list(int depth);
-static void debug_check_in_list(block_t *block);
 static void debug_print(const char *message);
-static void debug_verify_in_list(block_t *block);
 
 // Original functions given by instructor
 static void mm_checkheap(int verbose);
@@ -607,115 +601,7 @@ static void checkblock(block_t *block) {
   }
 }
 
-static void debug_explicit_list(int depth) {
-  printf("\nDEBUG EXPLICIT LIST: %d\n", global_counter);
-  global_counter++;
-
-  if (head == NULL) {
-    printf("0 elements.\n");
-    return;
-  }
-
-  int f_len = 0;
-  int b_len = 0;
-
-  // Traverse forward.
-  block_t *forward = head;
-  int f_idx = 0;
-
-  for (; f_idx < depth; f_idx++) {
-    if (forward->body.next == NULL) {
-      printf("%p (%d bytes) TAIL\n", forward, forward->block_size);
-      f_len++;
-      printf("  Forward traversal: %d elements.\n", f_len);
-      break;
-    }
-
-    printf("%p (%d bytes) -> ", forward, forward->block_size);
-    forward = forward->body.next;
-    f_len++;
-  }
-
-  if (f_idx == depth) {
-    printf("\nWARNING: Reached forward depth limit.\n");
-  }
-
-  // Traverse backwards.
-  block_t *backward = forward;
-  int b_idx = 0;
-
-  for (; b_idx < depth; b_idx++) {
-    if (backward->body.prev == NULL) {
-      printf("%p (%d bytes) HEAD\n", backward, backward->block_size);
-      b_len++;
-      printf("  Backward traversal: %d elements.\n", b_len);
-      break;
-    }
-
-    printf("%p (%d bytes) -> ", backward, backward->block_size);
-    backward = backward->body.prev;
-    b_len++;
-  }
-
-  if (b_idx == depth) {
-    printf("\nWARNING: Reached backward depth limit.\n");
-  }
-
-  if (f_len != b_len) {
-    printf("ERROR: length mismatch for forward and backward traversal.\n");
-    exit(1);
-  } else {
-    printf(
-        "Validated: equal lengths (%d) for forward and backward traversal.\n",
-        f_len);
-  }
-}
-
-static void debug_check_in_list(block_t *block) {
-  printf("\nDEBUG CHECK IN LIST: %d\n", global_counter);
-  global_counter++;
-
-  if (head == NULL) {
-    printf("Validated: block %p (%d bytes) EMPTY LIST\n", block,
-           block->block_size);
-    return;
-  }
-
-  int list_idx = 0;
-  for (block_t *current = head; current != NULL; current = current->body.next) {
-    if (block == current) {
-      printf("ERROR: block %p (%d bytes) already in list at index %d\n", block,
-             block->block_size, list_idx);
-      exit(1);
-      return;
-    }
-
-    list_idx++;
-  }
-
-  printf("Validated: block %p (%d bytes)\n", block, block->block_size);
-}
-
 static void debug_print(const char *message) {
   printf("\nDEBUG %s: %d\n", message, global_counter);
   global_counter++;
-}
-
-static void debug_verify_in_list(block_t *block) {
-  printf("\nDEBUG VERIFY IN LIST: %d\n", global_counter);
-  global_counter++;
-
-  int list_idx = 0;
-  for (block_t *current = head; current != NULL; current = current->body.next) {
-    if (block == current) {
-      printf("Validated: block %p (%d bytes) in list at index %d\n", block,
-             block->block_size, list_idx);
-      return;
-    }
-
-    list_idx++;
-  }
-
-  printf("ERROR: block %p (%d bytes) not in list\n", block, block->block_size);
-  exit(1);
 }
