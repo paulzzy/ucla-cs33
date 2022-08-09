@@ -34,7 +34,8 @@
 
 #define DEBUG_OUTPUT
 
-/* Your info */
+// Your info
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 team_t team = {
     /* First and last name */
     "implicit first fit",
@@ -77,11 +78,14 @@ enum block_state { FREE, ALLOC };
           + next pointer + prev pointer) */
 
 /* Global variables */
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static block_t *prologue; /* pointer to first block */
-static block_t *head;     // Head pointer of explicit free list (null-terminated
-                          // doubly-linked list)
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+static block_t *head; // Head pointer of explicit free list (null-terminated
+                      // doubly-linked list)
 
 // Debug variables
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static int global_counter = 1;
 static const int LIST_DEPTH = 1000;
 
@@ -128,7 +132,7 @@ static void checkblock(block_t *block);
 /* $begin mminit */
 int mm_init(void) {
   /* create the initial empty heap */
-  if ((prologue = mem_sbrk(CHUNKSIZE)) == (void *)-1) {
+  if ((prologue = mem_sbrk(CHUNKSIZE)) == (block_t *)UINTPTR_MAX) {
     return -1;
   }
   /* initialize the prologue */
@@ -173,7 +177,8 @@ void *mm_malloc(size_t size) {
   /* Adjust block size to include overhead and alignment reqs. */
   size += OVERHEAD;
 
-  asize = ((size + 7) >> 3) << 3; /* align to multiple of 8 */
+  const int ROUND_UP = 7;
+  asize = ((size + ROUND_UP) >> 3) << 3; /* align to multiple of 8 */
 
   if (asize < MIN_BLOCK_SIZE) {
     asize = MIN_BLOCK_SIZE;
@@ -329,7 +334,7 @@ static void list_remove(block_t *block) {
   }
 
   // One-element list
-  if (head->body.next == NULL) {
+  if (block->body.next == NULL) {
     head = NULL;
     return;
   }
@@ -381,7 +386,7 @@ static block_t *extend_heap(size_t words) {
   block_t *block = NULL;
   uint32_t size = 0;
   size = words << 3; // words*8
-  if (size == 0 || (block = mem_sbrk(size)) == (void *)-1) {
+  if (size == 0 || (block = mem_sbrk((int)size)) == (block_t *)UINTPTR_MAX) {
     return NULL;
   }
   /* The newly acquired region will start directly after the epilogue block */
@@ -529,7 +534,8 @@ static void printblock(block_t *block) {
 }
 
 static void checkblock(block_t *block) {
-  if ((uint64_t)block->body.payload % 8) {
+  const int ALIGNMENT_SIZE = 8;
+  if ((uint64_t)block->body.payload % ALIGNMENT_SIZE) {
     printf("Error: payload for block at %p is not aligned\n", block);
   }
   footer_t *footer = get_footer(block);
