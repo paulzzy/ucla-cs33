@@ -339,13 +339,16 @@ static void list_remove(block_t *block) {
   }
 
   // One-element list
-  if (block->body.next == NULL) {
+  if (head->body.next == NULL) {
     head = NULL;
     return;
   }
 
   // Removal block is head
-  if (head == block) {
+  // Null check for block->body.next is to satisfy Clang Static Analyzer, in
+  // particular the check `core.NullDereference`. In a correct explicit free
+  // list, a null `head->body.next` implies a null `block->body.next`.
+  if (head == block && block->body.next != NULL) {
     head = block->body.next;
     head->body.prev = NULL;
   }
